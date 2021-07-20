@@ -31,7 +31,7 @@ public class TestFileInfo {
 	private Integer size;//<0,=0,>0
 	private Boolean bestEffort;//true,false
 	private File dst;//valid, not valid
-	private Long sizeContent;//<0,=0,>0
+	private long sizeContent;//<0,=0,>0
 	private static String fileName = "writeFileInfo.log";
 	private static int lengthByteBuff;
 
@@ -79,8 +79,8 @@ public class TestFileInfo {
 
 		File temp = new File("tmp"+"/"+ "temp.log");
 		temp.createNewFile();
-		inputs.add(new TestInput("master".getBytes(StandardCharsets.UTF_8),FileInfo.CURRENT_HEADER_VERSION ,bb,bb,1L,20,false,temp,Long.MAX_VALUE));
-		inputs.add(new TestInput("".getBytes(StandardCharsets.UTF_8),FileInfo.CURRENT_HEADER_VERSION,bb,bb,1L,20,false,temp,Long.MAX_VALUE));
+		inputs.add(new TestInput("master".getBytes(StandardCharsets.UTF_8),FileInfo.CURRENT_HEADER_VERSION ,bb,bb,1L,20,false,temp,9223372036854775807L));
+		inputs.add(new TestInput("".getBytes(StandardCharsets.UTF_8),FileInfo.CURRENT_HEADER_VERSION,bb,bb,1L,20,false,temp,9223372036854775807L));
 		//inputs.add(new TestInput(null,FileInfo.CURRENT_HEADER_VERSION,bb,bb,1L,20,false,temp,Long.MAX_VALUE));
 		//inputs.add(new TestInput("master".getBytes(StandardCharsets.UTF_8),3,bb,bb,0L,20,true,temp,Long.MAX_VALUE));
 		//inputs.add(new TestInput(null,FileInfo.CURRENT_HEADER_VERSION,bb,bb,1L,20,false,temp,Long.MAX_VALUE));
@@ -113,9 +113,9 @@ public class TestFileInfo {
 		private Integer size;
 		private Boolean bestEffort;
 		private File dst;
-		private Long sizeContent;
+		private long sizeContent;
 
-		public TestInput(byte[] masterKey, int fileInfoVersion, ByteBuffer[] dataTest1,ByteBuffer[] dataTest2, long position, Integer size, Boolean bestEffort, File dst, Long sizeContent) {
+		public TestInput(byte[] masterKey, int fileInfoVersion, ByteBuffer[] dataTest1,ByteBuffer[] dataTest2, long position, Integer size, Boolean bestEffort, File dst, long sizeContent) {
 			this.masterKey = masterKey;
 			this.fileInfoVersion = fileInfoVersion;
 			this.dataTest1 = dataTest1;
@@ -159,7 +159,7 @@ public class TestFileInfo {
 			return dst;
 		}
 
-		public Long getSizeContent() {
+		public long getSizeContent() {
 			return sizeContent;
 		}
 	}
@@ -183,21 +183,21 @@ public class TestFileInfo {
 		long bytes = 0;
 		FileInfo fi = new FileInfo(lf,this.masterKey,this.fileInfoVersion);
 		
-		Long numBytesWritten = fi.write(this.dataTest1,this.position);
+		long numBytesWritten = fi.write(this.dataTest1,this.position);
 
 		if (lf.exists()) {
 			// size of a file (in bytes)
 			bytes = lf.length();
 		}
 
-		if(!numBytesWritten.equals(0L) && (bytes - 1025) > 0) {
-			assertEquals(new Long(bytes - 1025), numBytesWritten);
+		if(numBytesWritten != 0L  && (bytes - 1025) > 0) {
+			assertEquals(bytes - 1025L, numBytesWritten);
 		}
 
 
 		ByteBuffer bBuff = ByteBuffer.allocate(this.size);
 
-		if(!numBytesWritten.equals(0L)) {
+		if(numBytesWritten !=0L) {
 			fi.read(bBuff, this.position, this.bestEffort);
 
 			ByteBuffer mergedBb = ByteBuffer.allocate(this.size);
@@ -246,13 +246,13 @@ public class TestFileInfo {
 		
 		FileInfo fi = new FileInfo(lf,this.masterKey,this.fileInfoVersion);
 		
-		Long numBytesWritten = fi.write(this.dataTest2,this.position);
+		long numBytesWritten = fi.write(this.dataTest2,this.position);
 		
-		String result = readFromFile(numBytesWritten.intValue(),"tmp"+"/"+fileName);
+		String result = readFromFile(Math.toIntExact(numBytesWritten),"tmp"+"/"+fileName);
 		
 		fi.moveToNewLocation(this.dst,this.sizeContent);
 		
-		String resultNewFile = readFromFile(numBytesWritten.intValue(),"tmp"+"/"+ "temp.log");
+		String resultNewFile = readFromFile(Math.toIntExact(numBytesWritten),"tmp"+"/"+ "temp.log");
 		
 		//check deleted file
 		assertTrue(!Files.exists(Paths.get("tmp"+"/"+fileName)));
