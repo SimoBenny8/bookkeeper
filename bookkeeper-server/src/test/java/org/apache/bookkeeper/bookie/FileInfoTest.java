@@ -38,7 +38,7 @@ public class FileInfoTest {
 	private static int lengthByteBuff;
 	private ByteBuf lac;
 	private static ByteBuffer b1;
-
+	private File temp;
 
 
 	public FileInfoTest(TestInput ti) {
@@ -81,6 +81,9 @@ public class FileInfoTest {
 		lf = new File("tmp"+"/"+ fileName);
 		lf.createNewFile();
 
+		this.temp = new File("tmp"+"/"+ "temp.log");
+		this.temp.createNewFile();
+
 	}
 
 	@Parameterized.Parameters
@@ -97,8 +100,7 @@ public class FileInfoTest {
 		bb[3] = b1;
 		bb[4] = b1;
 
-		File temp = new File("tmp"+"/"+ "temp.log");
-		temp.createNewFile();
+
 		ByteBuf byB = Unpooled.buffer(0);
 		byB.writeLong(0L);
 		byB.writeLong(0L);
@@ -109,10 +111,10 @@ public class FileInfoTest {
 		byB.writeLong(0L);
 		byB.writeLong(0L);
 
-		inputs.add(new TestInput(byB,"master".getBytes(StandardCharsets.UTF_8),FileInfo.V1 ,bb,bb,0L,55,true,temp,9223372036854775807L));
-		inputs.add(new TestInput(Unpooled.buffer(0),"".getBytes(StandardCharsets.UTF_8),FileInfo.V1,new ByteBuffer[]{ByteBuffer.allocate(2)},bb,0L,2,false,temp,9223372036854775807L));
-		inputs.add(new TestInput(byB,"master".getBytes(StandardCharsets.UTF_8),FileInfo.V1 ,bb,bb,0L,400,false,temp,0));
-		inputs.add(new TestInput(byB,"master".getBytes(StandardCharsets.UTF_8),FileInfo.V1 ,bb,bb,0L,400,true,temp,0));
+		inputs.add(new TestInput(byB,"master".getBytes(StandardCharsets.UTF_8),FileInfo.V1 ,bb,bb,0L,55,true,null,9223372036854775807L));
+		inputs.add(new TestInput(Unpooled.buffer(0),"".getBytes(StandardCharsets.UTF_8),FileInfo.V1,new ByteBuffer[]{ByteBuffer.allocate(2)},bb,0L,2,false,null,9223372036854775807L));
+		inputs.add(new TestInput(byB,"master".getBytes(StandardCharsets.UTF_8),FileInfo.V1 ,bb,bb,0L,400,false,null,0));
+		inputs.add(new TestInput(byB,"master".getBytes(StandardCharsets.UTF_8),FileInfo.V1 ,bb,bb,0L,400,true,null,0));
 		inputs.add(new TestInput(byB,"master".getBytes(StandardCharsets.UTF_8),FileInfo.V0 ,bb,bb,0L,55,false,new File("tmp"+"/"+ fileName),9223372036854775807L));
 
 		//inputs.add(new TestInput(byB,"master".getBytes(StandardCharsets.UTF_8),FileInfo.V0 ,,bb,0L,55,false,new File("tmp"+"/"+ fileName),9223372036854775807L));
@@ -297,6 +299,8 @@ public class FileInfoTest {
 	
 	@Test
 	public void testMoveToNewLocation() throws IOException {
+
+		String resultNewFile;
 		
 		FileInfo fi = new FileInfo(lf,this.masterKey,this.fileInfoVersion);
 
@@ -307,17 +311,26 @@ public class FileInfoTest {
 		
 		String result = readFromFile(Math.toIntExact(numBytesWritten),"tmp"+"/"+fileName);
 
+		if(this.dst == null) {
+			fi.moveToNewLocation(this.temp, this.sizeContent);
+		}else{
+			fi.moveToNewLocation(this.dst, this.sizeContent);
+		}
 
-		fi.moveToNewLocation(this.dst, this.sizeContent);
+		if(this.dst == null) {
+			resultNewFile = readFromFile(Math.toIntExact(numBytesWritten), "tmp" + "/" + this.temp.getName());
+		}else{
+			resultNewFile = readFromFile(Math.toIntExact(numBytesWritten), "tmp" + "/" + this.dst.getName());
+		}
 
-		
-		String resultNewFile = readFromFile(Math.toIntExact(numBytesWritten),"tmp"+"/"+ this.dst.getName());
-
-		if(!this.dst.getName().equals(lf.getName())) {
+		if(this.dst != null && !this.dst.getName().equals(lf.getName())) {
 			//check deleted file
 			assertTrue(!Files.exists(Paths.get("tmp" + "/" + fileName)));
 			//check if new file exists
-			assertTrue(Files.exists(Paths.get("tmp" + "/" + this.dst.getName())));
+			if(this.dst == null)
+				assertTrue(Files.exists(Paths.get("tmp" + "/" + this.temp.getName())));
+			else
+				assertTrue(Files.exists(Paths.get("tmp" + "/" + this.dst.getName())));
 
 			assertEquals(result, resultNewFile);
 		}
