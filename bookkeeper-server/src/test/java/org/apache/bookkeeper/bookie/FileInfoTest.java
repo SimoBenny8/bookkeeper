@@ -5,7 +5,6 @@ import io.netty.buffer.Unpooled;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.*;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -39,9 +38,6 @@ public class FileInfoTest {
 	private static int lengthByteBuff;
 	private ByteBuf lac;
 	private static ByteBuffer b1;
-
-	@Rule
-	public ExpectedException exceptionRule = ExpectedException.none();
 
 
 
@@ -253,15 +249,20 @@ public class FileInfoTest {
 		ByteBuffer bBuff = ByteBuffer.allocate(this.size);
 
 		if(this.size > 55 && this.bestEffort.equals(false)){
-			exceptionRule.expect(ShortReadException.class);
+			//exceptionRule.expect(ShortReadException.class);
+
+			try {
+				fi.read(bBuff, this.position, this.bestEffort);
+				Assert.fail("Expected an ShortReadException to be thrown");
+			}catch(ShortReadException e) {}
+		}else {
+
+			int numBytesRead = fi.read(bBuff, this.position, this.bestEffort);
+
+			assertTrue(numBytesRead > 0);
+			assertEquals(numBytesWritten, bBuff.capacity() - bBuff.remaining());
+
 		}
-
-		int numBytesRead = fi.read(bBuff, this.position, this.bestEffort);
-
-		assertTrue(numBytesRead > 0);
-		assertEquals(numBytesWritten, bBuff.capacity() - bBuff.remaining());
-
-
 
 		fi.close(true);
 
