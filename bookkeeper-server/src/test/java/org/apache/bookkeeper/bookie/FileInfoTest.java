@@ -259,7 +259,7 @@ public class FileInfoTest {
 		int numBytesRead = fi.read(bBuff, this.position, this.bestEffort);
 
 		assertTrue(numBytesRead > 0);
-		assertEquals(new Integer((int)numBytesWritten), new Integer(bBuff.capacity() - bBuff.remaining()));
+		assertEquals(numBytesWritten, bBuff.capacity() - bBuff.remaining());
 
 
 
