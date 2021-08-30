@@ -59,7 +59,7 @@ public class ByteBufListTest {
 		inputs.add(new TestInput(ByteBufList.get(Unpooled.wrappedBuffer("testString".getBytes())),"","","",1, ByteBufList.ENCODER_WITH_SIZE));
 		inputs.add(new TestInput(ByteBufList.get(Unpooled.wrappedBuffer("testString".getBytes())),"","","",0, ByteBufList.ENCODER));
 		inputs.add(new TestInput(ByteBufList.get(Unpooled.wrappedBuffer("testStringPart1".getBytes()),Unpooled.wrappedBuffer("testStringPart2".getBytes())),"","","",0, ByteBufList.ENCODER));
-		//inputs.add(new TestInput(ByteBufList.get(null),"","","",0, ByteBufList.ENCODER));
+
 
 
 		return inputs;
